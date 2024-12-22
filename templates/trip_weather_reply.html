@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Погода в городах</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 20px;
+        }
+        .weather-card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        h2 {
+            margin-top: 0;
+        }
+    </style>
+</head>
+<body>
+
+<div class="weather-card">
+    <h2> {{city1_name}} </h2>
+    <p>Температура (°C): <span> {{city1_temp}} </span></p>
+    <p>Влажность (%): <span>{{city1_humidity}}</span></p>
+    <p>Скорость ветра (км/ч): <span>{{city1_wind}}</span></p>
+    <p>Вероятность дождя (%): <span>{{city1_rain}}</span></p>
+    <p>Описание: <span>{{city1_weather_type}}</span></p>
+</div>
+
+<div class="weather-card">
+    <h2> {{city2_name}} </h2>
+    <p>Температура (°C): <span>{{city2_temp}}</span></p>
+    <p>Влажность (%): <span>{{city2_humidity}}</span></p>
+    <p>Скорость ветра (км/ч): <span>{{city2_wind}}</span></p>
+    <p>Вероятность дождя (%): <span>{{city2_rain}}</span></p>
+    <p>Описание: <span>{{city2_weather_type}}</span></p>
+</div>
+
+</body>
+</html>
