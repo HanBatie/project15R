@@ -2,7 +2,7 @@
 import requests
 import logging
 
-logging.basicConfig(level=logging.INFO, filename='../web-weather/log_info.log', filemode='w')
+logging.basicConfig(level=logging.INFO, filename='/log_info.log', filemode='w')
 
 class Weather:
 
@@ -26,12 +26,12 @@ class Weather:
     def get_loc_key_by_city(self, name):
         loc_key_url = f'http://dataservice.accuweather.com/locations/v1/search?apikey={self.api_key}&q={name}'
         r = requests.get(loc_key_url)
-        if r.status_code == 200:
+        if r.status_code == 200 and r.json():
             loc_key = r.json()[0]['Key']
             return loc_key
         else:
             logging.info(f"Ошибка {r.status_code}, get_loc_key_by_city")
-            return r.status_code
+            return (r.status_code, 'Ошибка при обратботке названия города')
 
     def get_weather_data(self, city_name):
         #Получение loc_key по названию города
@@ -51,7 +51,7 @@ class Weather:
         humidity = weather_data[0]['RelativeHumidity']
         wind_speed = weather_data[0]['Wind']['Speed']['Metric']['Value']
         weather_text = weather_data[0]['WeatherText']
-        if not(weather_data[0]['HasPrecipitation']):
+        if not weather_data[0]['HasPrecipitation']:
             daily_forecasts_url = f'http://dataservice.accuweather.com/forecasts/v1/daily/1day/{self.loc_key}?apikey={self.api_key}&language=ru&details=true&metric=true'
             r = requests.get(daily_forecasts_url)
             if r.status_code == 200:
@@ -76,9 +76,52 @@ class Weather:
             'temp': temperature,
             'humidity': humidity,
             'wind_speed': wind_speed,
-            "rain_prob":rain_prob,
+            "rain_prob": rain_prob,
             "weather_type": weather_type}
 
         return self.cached_data
+
+    def get_forecast_weather_data(self, city_name, days=1):
+        # Получение loc_key по названию города
+        self.loc_key = self.get_loc_key_by_city(city_name)
+        print(self.loc_key)
+        if isinstance(self.loc_key, tuple):
+            return self.loc_key
+        # Получение прогнозных данных о погоде по location key
+        forecast_url = f'http://dataservice.accuweather.com/forecasts/v1/daily/5day/{self.loc_key}?apikey={self.api_key}&language=ru&details=true&metric=true'
+        r = requests.get(forecast_url)
+        print(forecast_url)
+        if r.status_code == 200:
+            forecast_data = r.json()
+        else:
+            logging.info(f"Ошибка {r.status_code}, get_forecast_weather_data")
+            return r.status_code
+
+        forecasts = []
+        for day in forecast_data['DailyForecasts'][:days]:
+            date = day['Date'][:10]
+            temp_min = day['Temperature']['Minimum']['Value']
+            temp_max = day['Temperature']['Maximum']['Value']
+            precipitation_prob = day['Day']['RainProbability']
+            wind_speed = day['Day']['Wind']['Speed']['Value']
+            weather_text = day['Day']['LongPhrase']
+            
+            # Извлечение влажности
+            humidity_day = day['Day'].get('RelativeHumidity', 0)['Average']
+            humidity_night = day['Night'].get('RelativeHumidity', 0)['Average']
+            humidity = (humidity_day + humidity_night) / 2
+
+            forecasts.append({
+                'date': date,
+                'temp_min': temp_min,
+                'temp_max': temp_max,
+                'precipitation_prob': precipitation_prob,
+                'wind_speed': wind_speed,
+                'humidity': humidity,
+                'weather_text': weather_text
+            })
+
+        print(forecasts)
+        return forecasts
 
 
